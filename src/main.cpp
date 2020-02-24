@@ -225,10 +225,7 @@ int main () {
     float yaw = 0.0f;
     float pitch = 0.0f;
 
-    //
-    // main loop
-    //
-    
+    // main game loop
     // render loop (an iteration of the loop is a frame)
     while (!glfwWindowShouldClose(window)) {
         
@@ -242,6 +239,7 @@ int main () {
         axis.draw();
         olaf.draw();
         
+        // initialize initial transformations for olaf
         vec3 initScale = olaf.getInitScale();
         vec3 initTranslate = olaf.getInitTranslate();
         float initRotateAngle = olaf.getInitRotateAngle();
@@ -252,14 +250,14 @@ int main () {
         glfwSetKeyCallback(window, key_callback);
         glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
 
-        // set pan and tilt matrix to be used as transformation amtrices for view matrix
+        // set pan and tilt matrix to be used as transformation matrices for view matrix
         glm::mat4 pan = glm::rotate(glm::mat4(1.0f), glm::radians(yaw), vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 tilt = glm::rotate(glm::mat4(1.0f), glm::radians(pitch), vec3(1.0f, 0.0f, 0.0f));
         
         viewMatrix = pan * tilt * lookAt(cameraPosition, cameraPosition + cameraLookAt, cameraUp);
         
         double mousePosX, mousePosY;
-        glfwGetCursorPos(window, &mousePosX, &mousePosY);
+        glfwGetCursorPos(window, &mousePosX, &mousePosY); // gets current mouse position when mouse moves
 
         // calculating difference in x and y positions
         double dx = mousePosX - lastMousePosX;
@@ -290,11 +288,7 @@ int main () {
         vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
 
         glm::normalize(cameraSideVector); // normalize camera vector
-        
-        //
-        // key inputs
-        //
-
+    
         // pressing spacebar repositions olaf at a random location
         if (glfwGetKey(window, GLFW_KEY_SPACE)) {
             srand((unsigned int)time(NULL)); // initialize random number generator for floats
@@ -314,7 +308,7 @@ int main () {
                 randomZ *= -1; // make Z negative
             }
     
-            olaf.translate(vec3(initTranslate.x + randomX, initTranslate.y, initTranslate.z + randomZ)); // position in y never chanegs since we only translate in x and z
+            olaf.translate(vec3(initTranslate.x + randomX, initTranslate.y, initTranslate.z + randomZ)); // position in y never changes since we only translate in x and z
         }
     
         float scaleValue = 0.001f;
@@ -334,33 +328,33 @@ int main () {
         // the following olaf movements are based from the camera's perspective and not the axis (i.e.: moving left corresponds to moving towards the negatvie x axis)
         // pressing 'A' moves olaf to the left
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
-             olaf.translate(vec3(initTranslate.x - movement, initTranslate.y, initTranslate.z)); // position in y never chanegs since we only translate in x and z
+             olaf.translate(vec3(initTranslate.x - movement, initTranslate.y, initTranslate.z)); // position in y never changes since we only translate in x and z
         }
         
         // pressing 'D' moves olaf to the right
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
-             olaf.translate(vec3(initTranslate.x + movement, initTranslate.y, initTranslate.z)); // position in y never chanegs since we only translate in x and z
+             olaf.translate(vec3(initTranslate.x + movement, initTranslate.y, initTranslate.z)); // position in y never changes since we only translate in x and z
         }
         
         // pressing 'W' moves olaf up
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
-             olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z - movement)); // position in y never chanegs since we only translate in x and z
+             olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z - movement)); // position in y never changes since we only translate in x and z
         }
         
         // pressing 'S' moves olaf down
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
-             olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z + movement)); // position in y never chanegs since we only translate in x and z
+             olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z + movement)); // position in y never changes since we only translate in x and z
         }
         
         // pressing 'a' rotates left 5 degress about olaf's y axis
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) != GLFW_PRESS) {
-            olaf.rotateSelf(true); // set boolean to true so olad can rotate about its own y axis
+            olaf.rotateSelf(true); // set boolean to true so olaf can rotate about its own y axis
             olaf.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
         }
         
         // pressing 'd' rotates right 5 degress about olaf's y axis
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) != GLFW_PRESS) {
-            olaf.rotateSelf(true); // set boolean to true so olad can rotate about its own y axis
+            olaf.rotateSelf(true); // set boolean to true so olaf can rotate about its own y axis
             olaf.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
         }
         
@@ -398,7 +392,7 @@ int main () {
         }
         
         // pressing home button resets to initial world position and orientation (olaf's position on grid does not change)
-        if (glfwGetKey(window, GLFW_KEY_HOME) == GLFW_PRESS) {
+        if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
             olaf.rotateSelf(false);
             axis.rotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
             olaf.rotate(0.0f, vec3(1.0f, 1.0f, 1.0f));

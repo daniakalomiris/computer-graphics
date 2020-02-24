@@ -18,13 +18,15 @@ Cube::Cube(vec3 rgb, int shaderProgram) {
     this->rgb = rgb;
     this->shaderProgram = shaderProgram;
     this->initRotateM = glm::mat4(1.0f);
-    this->rotateSelf = false;
+    this->rotateSelf = false; // initialize rotations around world axis
 }
  
 int Cube::createVAO(){
-    // modelled after a cube
+
+    // positions are based off lab vertexArray
+    // colors of each vertex is set when rgb value is assigned
     vec3 vertexArray[] = {  
-        vec3(-0.5f,-0.5f,-0.5f), vec3(rgb.x, rgb.y, rgb.z), //left
+        vec3(-0.5f,-0.5f,-0.5f), vec3(rgb.x, rgb.y, rgb.z), // left
         vec3(-0.5f,-0.5f, 0.5f), vec3(rgb.x, rgb.y, rgb.z),
         vec3(-0.5f, 0.5f, 0.5f), vec3(rgb.x, rgb.y, rgb.z),
 
@@ -111,9 +113,11 @@ int Cube::createVAO(){
     return vertexArrayObject;      
 }
 
+// draw cube model
 void Cube::draw(int renderMode) {
     GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
     
+    // order of transformations changes depending on if the rotation is happening around the world axis or object's axis
     if (rotateSelf) {
         modelWorldMatrix = initTranslateM * initRotateM * initScaleM;
     } 
@@ -125,10 +129,8 @@ void Cube::draw(int renderMode) {
     glDrawArrays(renderMode, 0, 36);
 }
 
-//
-// initializing transformation matrices
+// initializing all transformation matrices
 // each called once for each model
-// 
 void Cube::setInitRotate(float angle, glm::vec3 rotate) {
     this->initRotateAngle = angle;
     this->initRotate = rotate;
@@ -145,9 +147,7 @@ void Cube::setInitScale(glm::vec3 scale) {
     initScaleM = glm::scale(glm::mat4(1.0f), scale);
 }
 
-// 
-// multiplies initial transformation matrices
-//
+// transformation multiply initial model world matrix
 void Cube::setRotate(float angle, glm::vec3 rotate) {
     initRotateM = glm::rotate(glm::mat4(1.0f), radians(angle), rotate);
     this->initRotateAngle = angle;
@@ -164,6 +164,7 @@ void Cube::setScale(glm::vec3 scale) {
     this->initScale = scale;
 }
 
+// get initial transformation vectors
 vec3 Cube::getInitRotate() {
     return this->initRotate;
 }

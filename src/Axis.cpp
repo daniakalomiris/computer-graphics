@@ -17,6 +17,8 @@ using namespace glm;
 
 Axis::Axis(int shaderProgram) {
     this->shaderProgram = shaderProgram;
+
+    // initialize all three axis using cube model
     this->x = new Cube(vec3(1.0f, 0.0f, 0.0f), shaderProgram);
     this->y = new Cube(vec3(0.0f, 1.0f, 0.0f), shaderProgram);
     this->z = new Cube(vec3(0.0f, 0.0f, 1.0f), shaderProgram);
@@ -28,6 +30,7 @@ Axis::~Axis() {
     delete z;
 }
 
+// draws the entire axis model
 void Axis::draw() {
     this->drawX();
     this->drawY();
@@ -59,6 +62,7 @@ void Axis::drawZ() {
     z->draw(GL_TRIANGLES);
 }
 
+// set axis rotation when world orientation changes
 void Axis::rotate(float angle, glm::vec3 rotate) {
     this->initRotateAngle = angle;
     this->initRotate = rotate;

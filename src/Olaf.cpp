@@ -16,6 +16,8 @@ using namespace glm;
 
 Olaf::Olaf(int shaderProgram) {
     this->shaderProgram = shaderProgram;
+
+    // initialize all of olaf's part using cube model
     this->leftFoot = new Cube(vec3(1.0f, 1.0f, 1.0f), shaderProgram);
     this->rightFoot = new Cube(vec3(1.0f, 1.0f, 1.0f), shaderProgram);
     this->lowerBody = new Cube(vec3(1.0f, 1.0f, 1.0f), shaderProgram);
@@ -53,6 +55,7 @@ Olaf::~Olaf() {
     delete hair;
 }
 
+// draws the entire olaf model
 void Olaf::draw() {
     drawLeftFoot();
     drawRightFoot();
@@ -66,6 +69,10 @@ void Olaf::draw() {
     drawRightEye();
     drawHair();
 }
+
+// each part is set with initial transformations 
+// any additional transformations made in the main game loop will change here
+// when initRotate, initTranslate and initScale change
 
 void Olaf::drawLeftFoot() {
     leftFoot->createVAO();
@@ -208,15 +215,18 @@ void Olaf::drawHair() {
     hair->draw(renderMode);
 }
 
+// set olaf rotation when world orientation changes
 void Olaf::rotate(float angle, glm::vec3 rotate) {
     this->initRotateAngle = angle;
     this->initRotate = rotate;
 }
 
+// set olaf translation
 void Olaf::translate(glm::vec3 translate) {
     this->initTranslate = translate;
 }
 
+// set olaf scaling
 void Olaf::scale(glm::vec3 scale) {
     this->initScale = scale;
 }
@@ -235,22 +245,27 @@ void Olaf::rotateSelf(bool self) {
     hair->setRotateSelf(self);
 }
 
+// get initial rotation vector
 vec3 Olaf::getInitRotate() {
     return initRotate;
 }
 
+// get initial translation vector
 vec3 Olaf::getInitTranslate() {
     return initTranslate;
 }
 
+// get intial scaling vector
 vec3 Olaf::getInitScale() {
     return initScale;
 }
 
+// get initial rotation angle
 float Olaf::getInitRotateAngle() {
     return initRotateAngle;
 }
 
+// sets render mode for cube models
 void Olaf::setRenderMode(int renderMode) {
     this->renderMode = renderMode;
 }

@@ -22,7 +22,7 @@ Grid::Grid(int shaderProgram) {
 
 void Grid::draw(){
 
-    //grid model
+    // positions of one grid vertex
 	vec3 vertexArray[] = {
         vec3(1,0,0), vec3(1.0f, 1.0f, 0.0f), // yellow
         vec3(-1,0,0), vec3(1.0f, 1.0f, 0.0f) // yellow
@@ -71,7 +71,7 @@ void Grid::draw(){
     mat4 gridWorldMatrix = translate(mat4(1.0f), vec3(0.0f, 0.0f, 0.0f));
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridWorldMatrix[0][0]);
 
-    // becasue camera will be pointing to world space origin, we must render 50 lines in both directions on one side of +z axis and 50 lines in both directions on one side of -z axis
+    // because camera will be pointing to world space origin, we must render 50 lines in both directions on one side of +z axis and 50 lines in both directions on one side of -z axis
     for (int i = 0; i <= 50; i++) {
 		gridWorldMatrix = glm::rotate(mat4(1.0f), radians(initRotateAngle), initRotate) * translate(mat4(1.0f), vec3(0.0f, 0.0f, i * 1.0f)) * scale(mat4(1.0f), vec3(50.0f, 0.0f, 0.0f)); // scaling to 50 since we are
 		glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &gridWorldMatrix[0][0]);
@@ -101,6 +101,7 @@ void Grid::draw(){
     }
 }
 
+// rotates the grid when world orientation changes
 void Grid::rotate(float angle, glm::vec3 rotate) {
     this->initRotateAngle = angle;
     this->initRotate = rotate;
