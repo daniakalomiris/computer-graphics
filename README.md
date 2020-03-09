@@ -1,7 +1,4 @@
-COMP 371 Computer Graphics Assignment 1
-Winter 2020
-Dania Kalomiris
-40005674
+# COMP 371: Computer Graphics
 
 Features (all features that have been instructed to implement have been implemented in this assignment but below is a brief overview):
 - Olaf's position can be repositioned to a random location on the grid
