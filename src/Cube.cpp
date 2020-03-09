@@ -125,6 +125,8 @@ void Cube::draw(int renderMode) {
         modelWorldMatrix = initRotateM * initTranslateM * initScaleM;
     }
     
+    // world matrix = group matrix * part matrix
+
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelWorldMatrix[0][0]);
     glDrawArrays(renderMode, 0, 36);
 }

@@ -23,6 +23,7 @@
 		FC8724F523FCE58B009018C2 /* Axis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FC8724F423FCE58B009018C2 /* Axis.cpp */; };
 		FC8724F723FD9436009018C2 /* Olaf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FC8724F623FD9436009018C2 /* Olaf.cpp */; };
 		FCA991C723FDF061007199DF /* Cube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCA991C623FDF061007199DF /* Cube.cpp */; };
+		FCBEB39024149334005453EF /* Sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCBEB38F24149334005453EF /* Sphere.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -60,6 +61,13 @@
 		FC8724F823FD9443009018C2 /* Olaf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Olaf.h; sourceTree = "<group>"; };
 		FCA991C623FDF061007199DF /* Cube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cube.cpp; sourceTree = "<group>"; };
 		FCA991C823FDF06E007199DF /* Cube.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cube.h; sourceTree = "<group>"; };
+		FCB32789241578B600C2977E /* snow.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = snow.jpg; sourceTree = "<group>"; };
+		FCB3278A24157C5200C2977E /* texture.vertexshader */ = {isa = PBXFileReference; lastKnownFileType = text; path = texture.vertexshader; sourceTree = "<group>"; };
+		FCB3278B24157C5E00C2977E /* texture.fragmentshader */ = {isa = PBXFileReference; lastKnownFileType = text; path = texture.fragmentshader; sourceTree = "<group>"; };
+		FCBEB38E24149258005453EF /* Sphere.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Sphere.h; sourceTree = "<group>"; };
+		FCBEB38F24149334005453EF /* Sphere.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Sphere.cpp; sourceTree = "<group>"; };
+		FCBEB39324149A8D005453EF /* sphere.vertexshader */ = {isa = PBXFileReference; lastKnownFileType = text; path = sphere.vertexshader; sourceTree = "<group>"; };
+		FCBEB39424149AD4005453EF /* sphere.fragmentshader */ = {isa = PBXFileReference; lastKnownFileType = text; path = sphere.fragmentshader; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +106,7 @@
 		0371ABC21A6EAF2E00029CF8 = {
 			isa = PBXGroup;
 			children = (
+				FCB32788241578B600C2977E /* assets */,
 				FC8724E923F8AFBE009018C2 /* include */,
 				FC8724E623F8AF98009018C2 /* shaders */,
 				038B785E1A6EB3F500111E36 /* src */,
@@ -122,6 +131,7 @@
 				FC07820723E2092400C4E241 /* main.cpp */,
 				FC8724F423FCE58B009018C2 /* Axis.cpp */,
 				FC8724EF23FB5060009018C2 /* Grid.cpp */,
+				FCBEB38F24149334005453EF /* Sphere.cpp */,
 			);
 			name = src;
 			path = ../src;
@@ -132,6 +142,10 @@
 			children = (
 				FC8724E723F8AF98009018C2 /* common.fragmentshader */,
 				FC8724E823F8AF98009018C2 /* common.vertexshader */,
+				FCBEB39324149A8D005453EF /* sphere.vertexshader */,
+				FCBEB39424149AD4005453EF /* sphere.fragmentshader */,
+				FCB3278A24157C5200C2977E /* texture.vertexshader */,
+				FCB3278B24157C5E00C2977E /* texture.fragmentshader */,
 			);
 			name = shaders;
 			path = ../shaders;
@@ -144,9 +158,19 @@
 				FCA991C823FDF06E007199DF /* Cube.h */,
 				FC8724F323FCE56B009018C2 /* Axis.h */,
 				FC8724F223FB51BB009018C2 /* Grid.h */,
+				FCBEB38E24149258005453EF /* Sphere.h */,
 			);
 			name = include;
 			path = ../include;
+			sourceTree = "<group>";
+		};
+		FCB32788241578B600C2977E /* assets */ = {
+			isa = PBXGroup;
+			children = (
+				FCB32789241578B600C2977E /* snow.jpg */,
+			);
+			name = assets;
+			path = ../assets;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -208,6 +232,7 @@
 			files = (
 				FCA991C723FDF061007199DF /* Cube.cpp in Sources */,
 				FC8724F523FCE58B009018C2 /* Axis.cpp in Sources */,
+				FCBEB39024149334005453EF /* Sphere.cpp in Sources */,
 				FC8724EC23FAF903009018C2 /* common.vertexshader in Sources */,
 				FC8724EB23FAF900009018C2 /* common.fragmentshader in Sources */,
 				FC07820823E2092400C4E241 /* main.cpp in Sources */,

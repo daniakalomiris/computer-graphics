@@ -5,6 +5,7 @@
 #include <glm/common.hpp>
 
 #include "Cube.h"
+#include "Sphere.h"
 
 class Olaf {
     public:

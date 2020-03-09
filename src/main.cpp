@@ -169,10 +169,10 @@ int main () {
     #else
         std::string shaderPathPrefix = "../shaders/";
     #endif
-    int shaderProgram = loadShaders(shaderPathPrefix + "common.vertexshader", shaderPathPrefix + "common.fragmentshader");
     
-    // we can set the shader program once, since we have only one
-    glUseProgram(shaderProgram);
+    int commonShaderProgram = loadShaders(shaderPathPrefix + "common.vertexshader", shaderPathPrefix + "common.fragmentshader");
+    
+    glUseProgram(commonShaderProgram);
 
     // camera parameters for view transform at origin
     vec3 cameraPosition(0.0f, 5.0f, 20.0f);
@@ -190,7 +190,7 @@ int main () {
                                              0.01f, 100.0f);    // near and far (near > 0)
 
     // set up the uniform
-    GLuint projectionMatrixLocation = glGetUniformLocation(shaderProgram, "projectionMatrix");
+    GLuint projectionMatrixLocation = glGetUniformLocation(commonShaderProgram, "projectionMatrix");
     glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
 
     // set initial view matrix
@@ -198,13 +198,13 @@ int main () {
                              cameraPosition + cameraLookAt, // center
                              cameraUp);                     // up
 
-    GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+    GLuint viewMatrixLocation = glGetUniformLocation(commonShaderProgram, "viewMatrix");
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
 
     // define and upload geometry to the GPU here
-    Grid grid(shaderProgram);
-    Axis axis(shaderProgram);
-    Olaf olaf(shaderProgram);
+    Grid grid(commonShaderProgram);
+    Axis axis(commonShaderProgram);
+    Olaf olaf(commonShaderProgram);
     
     // frame time settings
     float lastFrameTime = glfwGetTime();
@@ -458,7 +458,7 @@ int main () {
             }
         }
 
-        GLuint viewMatrixLocation = glGetUniformLocation(shaderProgram, "viewMatrix");
+        GLuint viewMatrixLocation = glGetUniformLocation(commonShaderProgram, "viewMatrix");
         glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
     }
     
