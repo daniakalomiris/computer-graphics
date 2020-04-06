@@ -7,6 +7,7 @@
 class Cube {
     public:
         Cube(glm::vec3 rgb, int shaderProgram);
+        Cube(glm::vec3 rgb, int shaderProgram, const char* fileName);
         int createVAO();
         void draw(int renderMode);
         void setInitRotate(float angle, glm::vec3 rotate);
@@ -18,17 +19,23 @@ class Cube {
         glm::vec3 getInitRotate();
         glm::vec3 getInitTranslate();
         glm::vec3 getInitScale();
-        void setRotateSelf(bool rotateSelf);
+        GLuint createTexture(const char* filename);
+        void toggleTexture();
     private:
         glm::vec3 rgb;
         int shaderProgram;
-        glm::mat4 modelWorldMatrix = glm::mat4(1.0f);
         glm::mat4 initRotateM;
         glm::mat4 initTranslateM;
         glm::mat4 initScaleM;
+        glm::mat4 modelWorldMatrix;
+        glm::mat4 sourceMatrix;
+        glm::mat4 updateMatrix;
         glm::vec3 initRotate;
         glm::vec3 initTranslate;
         glm::vec3 initScale;
         float initRotateAngle;
-        bool rotateSelf;
+        bool isTextured;
+        GLuint textureID;
+        int vertexArrayObject;
+        glm::vec3 vertexColor;
 };

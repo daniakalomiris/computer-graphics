@@ -4,13 +4,21 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/common.hpp>
 
-class Grid {
+#include <GL/glew.h>
+
+
+class Ground {
     public:
-        Grid(int shaderProgram);
+        Ground(int shaderProgram);
+        Ground(int shaderProgram, const char* fileName);
         void draw();
         void rotate(float angle, glm::vec3 rotate);
+        void createTexture(const char* filename);
+        void toggleTexture();
     private:
         int shaderProgram;
         glm::vec3 initRotate;
         float initRotateAngle;
+        bool isTextured;
+        GLuint textureID;
 };

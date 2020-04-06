@@ -10,6 +10,8 @@
 
 #include "Sphere.h"
 
+#include "stb_image.h"
+
 #include <iostream>
 
 using namespace std;
@@ -19,11 +21,23 @@ Sphere::Sphere(vec3 rgb, int shaderProgram) {
     this->rgb = rgb;
     this->shaderProgram = shaderProgram;
     this->initRotateM = glm::mat4(1.0f);
-    this->rotateSelf = false; // initialize rotations around world axis
+    this->moveRotateM = glm::mat4(1.0f);
+    
+    this->isMovingSelf = false;
 }
+
+Sphere::Sphere(vec3 rgb, int shaderProgram, const char* fileName) {
+    this->rgb = rgb;
+    this->shaderProgram = shaderProgram;
+    this->initRotateM = glm::mat4(1.0f);
+    this->moveRotateM = glm::mat4(1.0f);
+    this->isMovingSelf = false;
+    this->isTextured = true;
+    this->createTexture(fileName);
+}
+
  
 int Sphere::createVAO(){
-    
     
     // vertexBuffer is credited to the lab cobe
     // colors of each vertex is set when rgb value is assigned
@@ -1326,7 +1340,7 @@ int Sphere::createVAO(){
     
     // 3rd attribute buffer : vertex color
     glVertexAttribPointer(2,
-                          3,
+                          2,
                           GL_FLOAT,
                           GL_FALSE,
                           sizeof(Vertex),
@@ -1337,34 +1351,81 @@ int Sphere::createVAO(){
     return mVAO;
 }
 
-Sphere::~Sphere() {
-    glDeleteBuffers(1, &mVBO);
-    glDeleteVertexArrays(1, &mVAO);
+
+GLuint Sphere::createTexture(const char* fileName) {
+    // Step1 Create and bind textures
+    GLuint textureId = 0;
+    glGenTextures(1, &textureId);
+    assert(textureId != 0);
+
+
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    // Step2 Set filter parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Step3 Load Textures with dimension data
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load(fileName, &width, &height, &nrChannels, 0);
+    if (!data)
+    {
+    std::cerr << "Error::Texture could not load texture file:" << fileName << std::endl;
+    return 0;
+    }
+
+    // Step4 Upload the texture to the PU
+    GLenum format = 0;
+    if (nrChannels == 1)
+      format = GL_RED;
+    else if (nrChannels == 3)
+      format = GL_RGB;
+    else if (nrChannels == 4)
+      format = GL_RGBA;
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height,
+               0, format, GL_UNSIGNED_BYTE, data);
+
+    // Step5 Free resources
+    stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return textureId;
+}
+
+void Sphere::toggleTexture() {
+    isTextured = !isTextured;
 }
 
 // draw sphere model
 void Sphere::draw(int renderMode) {
-    
-    // draw the Vertex Buffer
-   glBindVertexArray(mVAO);
-   glBindBuffer(GL_ARRAY_BUFFER, mVBO);
+
+    // load textures
+    if (isTextured) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        
+        GLuint textureLocation = glGetUniformLocation(shaderProgram, "textureSampler");
+        glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
+        glUniform1i(textureLocation, true);
+    }
+
+    int vertexColorLocation = glGetUniformLocation(shaderProgram, "vertexColor");
+    glUniform3f(vertexColorLocation, rgb.x, rgb.y, rgb.z);
     
    GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
- 
-    // order of transformations changes depending on if the rotation is happening around the world axis or object's axis
-    if (rotateSelf) {
-        modelWorldMatrix = initTranslateM * initRotateM * initScaleM;
-    }
-    else {
-        modelWorldMatrix = initRotateM * initTranslateM * initScaleM;
-    }
     
-    // world matrix = group matrix * part matrix
+    if(!isMovingSelf) {
+        modelWorldMatrix = initRotateM * initTranslateM * initScaleM;
+    } else {
+        modelWorldMatrix = initRotateM * initTranslateM * initScaleM * moveRotateM;
+    }
     
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelWorldMatrix[0][0]);
           
-    // draw the triangles
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 1260);
+    // draw the sphere
+    glDrawArrays(renderMode, 0, 1260);
+    
+    // reset walking movement
+    this->isMovingSelf = false;
 }
 
 // initializing all transformation matrices
@@ -1415,6 +1476,26 @@ vec3 Sphere::getInitScale() {
     return this->initScale;
 }
 
-void Sphere::setRotateSelf(bool rotateSelf) {
-    this->rotateSelf = rotateSelf;
+void Sphere::setShinyMaterial() {
+    const GLfloat ambient[4] = {0.02f, 0.02f, 0.02f, 1.0f};
+    const GLfloat diffuse[4] = {0.01f, 0.01f, 0.01f, 1.0f};
+    const GLfloat specular[4] = {0.4f, 0.4f, 0.4f, 1.0f};
+    const GLfloat shininess = 10.0f;
+    glColor4fv(diffuse);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+}
+
+void Sphere::moveSelf() {
+    this->isMovingSelf = !isMovingSelf;
+}
+
+GLboolean Sphere::getIsMovingSelf() {
+    return this->isMovingSelf;
+}
+
+void Sphere::setMoveRotate(float angle, glm::vec3 rotate) {
+    moveRotateM = glm::rotate(glm::mat4(1.0f), radians(angle), rotate);
 }

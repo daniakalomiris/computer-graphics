@@ -1,4 +1,6 @@
 #include <iostream>
+#include <list>
+#include <algorithm>
 
 #define GLEW_STATIC 1 // this allows linking with Static Library on Windows without DLL
 #include <GL/glew.h> // include GLEW (OpenGL Extension Wrangler)
@@ -9,7 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp> // include this to create transformation matrices
 #include <glm/common.hpp>
 
-#include "Grid.h"
+#include "Ground.h"
 #include "Axis.h"
 #include "Olaf.h"
 
@@ -123,6 +125,9 @@ GLuint loadShaders(std::string vertex_shader_path, std::string fragment_shader_p
     return ProgramID;
 }
 
+// lighting
+glm::vec3 lightPos(0.0f, 30.0f, 0.0f); // placed 30 units above olaf model
+
 int main () {
     
     // initialize and configure glfw
@@ -170,8 +175,8 @@ int main () {
         std::string shaderPathPrefix = "../shaders/";
     #endif
     
-    int commonShaderProgram = loadShaders(shaderPathPrefix + "common.vertexshader", shaderPathPrefix + "common.fragmentshader");
-    
+    GLuint commonShaderProgram = loadShaders(shaderPathPrefix + "common.vertexshader", shaderPathPrefix + "common.fragmentshader");
+
     glUseProgram(commonShaderProgram);
 
     // camera parameters for view transform at origin
@@ -200,11 +205,14 @@ int main () {
 
     GLuint viewMatrixLocation = glGetUniformLocation(commonShaderProgram, "viewMatrix");
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-
+    
     // define and upload geometry to the GPU here
-    Grid grid(commonShaderProgram);
+    Ground ground(commonShaderProgram);
     Axis axis(commonShaderProgram);
     Olaf olaf(commonShaderProgram);
+    
+    // initialize olaf with sphere model
+    olaf.setRenderMode(GL_TRIANGLE_STRIP);
     
     // frame time settings
     float lastFrameTime = glfwGetTime();
@@ -212,18 +220,35 @@ int main () {
     glfwGetCursorPos(window, &lastMousePosX, &lastMousePosY);
     
     // other OpenGL states to set once before the game loop
-    // enable backface culling
-    glEnable(GL_CULL_FACE);
     
     // enable depth test
     glEnable(GL_DEPTH_TEST);
-    
+
     // set the gl depth function
     glDepthFunc(GL_LESS);
     
     // yaw and pitch settings for mouse rotations
     float yaw = 0.0f;
     float pitch = 0.0f;
+     
+ 
+         glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+            glUniform3fv(glGetUniformLocation(commonShaderProgram, "lightColor"), 1, &lightColor[0]);
+     
+    glUniform3fv(glGetUniformLocation(commonShaderProgram, "lightPos"), 1, &lightPos[0]);
+
+    
+             glUniform3fv(glGetUniformLocation(commonShaderProgram, "viewPos"), 1, &cameraPosition[0]);
+    
+ 
+            glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
+              glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+    
+    //        // world transformation
+    glm::mat4 model = glm::mat4(1.0f);
+
+    glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "worldMatrix"), 1, GL_FALSE, &model[0][0]);
+    
 
     // main game loop
     // render loop (an iteration of the loop is a frame)
@@ -234,8 +259,8 @@ int main () {
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear depth buffer bit at the beginning of each frame
 
-        // draw grid, axis and olaf
-        grid.draw();
+        // draw ground, axis and olaf
+        ground.draw();
         axis.draw();
         olaf.draw();
         
@@ -282,7 +307,7 @@ int main () {
         // locking mouse movements since they will be controlled when pressing down on mouse buttons
         float cameraLookAtX = 0.0f;
         float cameraLookAtY = 0.0f;
-        float cameraLookAtZ = -20.0f; 
+        float cameraLookAtZ = -20.0f;
         
         cameraLookAt = vec3(cameraLookAtX, cameraLookAtY, cameraLookAtZ);
         vec3 cameraSideVector = glm::cross(cameraLookAt, vec3(0.0f, 1.0f, 0.0f));
@@ -315,7 +340,7 @@ int main () {
 
         // pressing 'U' scales olaf up by scale value
         if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
-            olaf.scale(vec3(initScale.x + scaleValue, initScale.y + scaleValue, initScale.z + scaleValue)); 
+            olaf.scale(vec3(initScale.x + scaleValue, initScale.y + scaleValue, initScale.z + scaleValue));
         }
 
         // pressing 'J' scales olaf down by scale value
@@ -334,69 +359,68 @@ int main () {
         // pressing 'D' moves olaf to the right
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
              olaf.translate(vec3(initTranslate.x + movement, initTranslate.y, initTranslate.z)); // position in y never changes since we only translate in x and z
+            
         }
         
         // pressing 'W' moves olaf up
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
-             olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z - movement)); // position in y never changes since we only translate in x and z
-        }
+            
+            olaf.walk();
+            olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z - movement)); // position in y never changes since we only translate in x and z
+
+         }
         
         // pressing 'S' moves olaf down
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
+            olaf.walk();
              olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z + movement)); // position in y never changes since we only translate in x and z
-        }
+              
+         }
+         
         
         // pressing 'a' rotates left 5 degress about olaf's y axis
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) != GLFW_PRESS) {
-            olaf.rotateSelf(true); // set boolean to true so olaf can rotate about its own y axis
-            olaf.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
+            olaf.rotate(initRotateAngle + 1.0f, vec3(0.0f, 1.0f, 0.0f));
         }
         
         // pressing 'd' rotates right 5 degress about olaf's y axis
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) != GLFW_PRESS) {
-            olaf.rotateSelf(true); // set boolean to true so olaf can rotate about its own y axis
-            olaf.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
+            olaf.rotate(initRotateAngle - 1.0f, vec3(0.0f, 1.0f, 0.0f));
         }
         
         // pressing left arrow moves anticlockwise rotation about positive x axis
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-            olaf.rotateSelf(false); // reset boolean so olaf can rotate around world x axis and not its own x axis
             axis.rotate(initRotateAngle + 5.0f, vec3(1.0f, 0.0f, 0.0f));
             olaf.rotate(initRotateAngle + 5.0f, vec3(1.0f, 0.0f, 0.0f));
-            grid.rotate(initRotateAngle + 5.0f, vec3(1.0f, 0.0f, 0.0f));
+            ground.rotate(initRotateAngle + 5.0f, vec3(1.0f, 0.0f, 0.0f));
         }
         
         // pressing right arrow moves clock rotation about negative x axis
         if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-            olaf.rotateSelf(false);
             axis.rotate(initRotateAngle - 5.0f, vec3(1.0f, 0.0f, 0.0f));
             olaf.rotate(initRotateAngle - 5.0f, vec3(1.0f, 0.0f, 0.0f));
-            grid.rotate(initRotateAngle - 5.0f, vec3(1.0f, 0.0f, 0.0f));
+            ground.rotate(initRotateAngle - 5.0f, vec3(1.0f, 0.0f, 0.0f));
         }
         
         // pressing up arrow moves anticlockwise rotation about positive y axis
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-            olaf.rotateSelf(false);
-            olaf.rotate(initRotateAngle - 5.0f, vec3(1.0f, 0.0f, 0.0f));
             axis.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
             olaf.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
-            grid.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
+            ground.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
         }
         
         // pressing down arrow moves anticlockwise rotation about negative y axis
         if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-            olaf.rotateSelf(false);
             axis.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
             olaf.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
-            grid.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
+            ground.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
         }
         
-        // pressing home button resets to initial world position and orientation (olaf's position on grid does not change)
+        // pressing home button resets to initial world position and orientation (olaf's position on ground does not change)
         if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
-            olaf.rotateSelf(false);
             axis.rotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
             olaf.rotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
-            grid.rotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
+            ground.rotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
         }
         
         // pressing 'P' renders points
@@ -412,6 +436,11 @@ int main () {
         // pressing 'T' renders triangles
         if (glfwGetKey(window, GLFW_KEY_T) && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
             olaf.setRenderMode(GL_TRIANGLES);
+        }
+        
+        // pressing 'O' renders triangle mesh (sphere)
+        if (glfwGetKey(window, GLFW_KEY_O) && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            olaf.setRenderMode(GL_TRIANGLE_STRIP);
         }
         
         // pressing right mouse button moves mouse in x to pan
@@ -457,9 +486,19 @@ int main () {
                 cameraPosition -= cameraLookAt * dt * zoomSpeed;
             }
         }
+        
+        // pressing 'X' toggles texture on/off
+        if (glfwGetKey(window, GLFW_KEY_X) && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            
+        }
 
+        
         GLuint viewMatrixLocation = glGetUniformLocation(commonShaderProgram, "viewMatrix");
         glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
+        
+        
+        
+      
     }
     
     glfwTerminate(); // delete all GLFW resources

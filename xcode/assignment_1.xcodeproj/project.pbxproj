@@ -19,11 +19,13 @@
 		FC8724EC23FAF903009018C2 /* common.vertexshader in Sources */ = {isa = PBXBuildFile; fileRef = FC8724E823F8AF98009018C2 /* common.vertexshader */; };
 		FC8724ED23FAFA36009018C2 /* common.fragmentshader in CopyFiles */ = {isa = PBXBuildFile; fileRef = FC8724E723F8AF98009018C2 /* common.fragmentshader */; };
 		FC8724EE23FAFA36009018C2 /* common.vertexshader in CopyFiles */ = {isa = PBXBuildFile; fileRef = FC8724E823F8AF98009018C2 /* common.vertexshader */; };
-		FC8724F123FB5060009018C2 /* Grid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FC8724EF23FB5060009018C2 /* Grid.cpp */; };
+		FC8724F123FB5060009018C2 /* Ground.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FC8724EF23FB5060009018C2 /* Ground.cpp */; };
 		FC8724F523FCE58B009018C2 /* Axis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FC8724F423FCE58B009018C2 /* Axis.cpp */; };
 		FC8724F723FD9436009018C2 /* Olaf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FC8724F623FD9436009018C2 /* Olaf.cpp */; };
 		FCA991C723FDF061007199DF /* Cube.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCA991C623FDF061007199DF /* Cube.cpp */; };
 		FCBEB39024149334005453EF /* Sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FCBEB38F24149334005453EF /* Sphere.cpp */; };
+		FCED061124350AC800223634 /* snow.jpg in CopyFiles */ = {isa = PBXBuildFile; fileRef = FCB32789241578B600C2977E /* snow.jpg */; };
+		FCED061224350AC800223634 /* carrot.jpg in CopyFiles */ = {isa = PBXBuildFile; fileRef = FCED060C243508C100223634 /* carrot.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,6 +35,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				FCED061124350AC800223634 /* snow.jpg in CopyFiles */,
+				FCED061224350AC800223634 /* carrot.jpg in CopyFiles */,
 				FC8724ED23FAFA36009018C2 /* common.fragmentshader in CopyFiles */,
 				FC8724EE23FAFA36009018C2 /* common.vertexshader in CopyFiles */,
 			);
@@ -50,11 +54,12 @@
 		038B791D1A6FF3EB00111E36 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		03CF97D01B56DF9A00F60482 /* libfreeimage.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreeimage.a; path = "../ThirdParty/FreeImage-3170/lib/osx/libfreeimage.a"; sourceTree = "<group>"; };
 		03DA72D122B02FC5009C7A21 /* libGLEW.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libGLEW.a; path = "../ThirdParty/glew-2.1.0/lib/osx/libGLEW.a"; sourceTree = "<group>"; };
+		FC001006242C073E009F09B0 /* stb_image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stb_image.h; sourceTree = "<group>"; };
 		FC07820723E2092400C4E241 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		FC8724E723F8AF98009018C2 /* common.fragmentshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = common.fragmentshader; sourceTree = "<group>"; };
 		FC8724E823F8AF98009018C2 /* common.vertexshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = common.vertexshader; sourceTree = "<group>"; };
-		FC8724EF23FB5060009018C2 /* Grid.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Grid.cpp; sourceTree = "<group>"; };
-		FC8724F223FB51BB009018C2 /* Grid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Grid.h; sourceTree = "<group>"; };
+		FC8724EF23FB5060009018C2 /* Ground.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Ground.cpp; sourceTree = "<group>"; };
+		FC8724F223FB51BB009018C2 /* Ground.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ground.h; sourceTree = "<group>"; };
 		FC8724F323FCE56B009018C2 /* Axis.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Axis.h; sourceTree = "<group>"; };
 		FC8724F423FCE58B009018C2 /* Axis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Axis.cpp; sourceTree = "<group>"; };
 		FC8724F623FD9436009018C2 /* Olaf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Olaf.cpp; sourceTree = "<group>"; };
@@ -62,12 +67,9 @@
 		FCA991C623FDF061007199DF /* Cube.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cube.cpp; sourceTree = "<group>"; };
 		FCA991C823FDF06E007199DF /* Cube.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cube.h; sourceTree = "<group>"; };
 		FCB32789241578B600C2977E /* snow.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = snow.jpg; sourceTree = "<group>"; };
-		FCB3278A24157C5200C2977E /* texture.vertexshader */ = {isa = PBXFileReference; lastKnownFileType = text; path = texture.vertexshader; sourceTree = "<group>"; };
-		FCB3278B24157C5E00C2977E /* texture.fragmentshader */ = {isa = PBXFileReference; lastKnownFileType = text; path = texture.fragmentshader; sourceTree = "<group>"; };
 		FCBEB38E24149258005453EF /* Sphere.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Sphere.h; sourceTree = "<group>"; };
 		FCBEB38F24149334005453EF /* Sphere.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Sphere.cpp; sourceTree = "<group>"; };
-		FCBEB39324149A8D005453EF /* sphere.vertexshader */ = {isa = PBXFileReference; lastKnownFileType = text; path = sphere.vertexshader; sourceTree = "<group>"; };
-		FCBEB39424149AD4005453EF /* sphere.fragmentshader */ = {isa = PBXFileReference; lastKnownFileType = text; path = sphere.fragmentshader; sourceTree = "<group>"; };
+		FCED060C243508C100223634 /* carrot.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = carrot.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -130,7 +132,7 @@
 				FCA991C623FDF061007199DF /* Cube.cpp */,
 				FC07820723E2092400C4E241 /* main.cpp */,
 				FC8724F423FCE58B009018C2 /* Axis.cpp */,
-				FC8724EF23FB5060009018C2 /* Grid.cpp */,
+				FC8724EF23FB5060009018C2 /* Ground.cpp */,
 				FCBEB38F24149334005453EF /* Sphere.cpp */,
 			);
 			name = src;
@@ -142,10 +144,6 @@
 			children = (
 				FC8724E723F8AF98009018C2 /* common.fragmentshader */,
 				FC8724E823F8AF98009018C2 /* common.vertexshader */,
-				FCBEB39324149A8D005453EF /* sphere.vertexshader */,
-				FCBEB39424149AD4005453EF /* sphere.fragmentshader */,
-				FCB3278A24157C5200C2977E /* texture.vertexshader */,
-				FCB3278B24157C5E00C2977E /* texture.fragmentshader */,
 			);
 			name = shaders;
 			path = ../shaders;
@@ -157,8 +155,9 @@
 				FC8724F823FD9443009018C2 /* Olaf.h */,
 				FCA991C823FDF06E007199DF /* Cube.h */,
 				FC8724F323FCE56B009018C2 /* Axis.h */,
-				FC8724F223FB51BB009018C2 /* Grid.h */,
+				FC8724F223FB51BB009018C2 /* Ground.h */,
 				FCBEB38E24149258005453EF /* Sphere.h */,
+				FC001006242C073E009F09B0 /* stb_image.h */,
 			);
 			name = include;
 			path = ../include;
@@ -168,6 +167,7 @@
 			isa = PBXGroup;
 			children = (
 				FCB32789241578B600C2977E /* snow.jpg */,
+				FCED060C243508C100223634 /* carrot.jpg */,
 			);
 			name = assets;
 			path = ../assets;
@@ -237,7 +237,7 @@
 				FC8724EB23FAF900009018C2 /* common.fragmentshader in Sources */,
 				FC07820823E2092400C4E241 /* main.cpp in Sources */,
 				FC8724F723FD9436009018C2 /* Olaf.cpp in Sources */,
-				FC8724F123FB5060009018C2 /* Grid.cpp in Sources */,
+				FC8724F123FB5060009018C2 /* Ground.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
