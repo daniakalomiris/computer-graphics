@@ -19,12 +19,18 @@
 #include <fstream>
 #include <random>
 
+#include "stb_image.h"
+
+
 using namespace glm;
 using namespace std;
 
 // window settings
 const unsigned int SCR_WIDTH = 1024;
 const unsigned int SCR_HEIGHT = 768;
+
+unsigned int planeVAO;
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
  
@@ -125,9 +131,45 @@ GLuint loadShaders(std::string vertex_shader_path, std::string fragment_shader_p
     return ProgramID;
 }
 
-// lighting
-glm::vec3 lightPos(0.0f, 30.0f, 0.0f); // placed 30 units above olaf model
 
+GLuint loadTexture(const char* fileName) {
+     // Step1 Create and bind textures
+      GLuint textureId = 0;
+      glGenTextures(1, &textureId);
+      assert(textureId != 0);
+
+      glBindTexture(GL_TEXTURE_2D, textureId);
+
+      // Step2 Set filter parameters
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+      // Step3 Load Textures with dimension data
+      int width, height, nrChannels;
+      unsigned char *data = stbi_load(fileName, &width, &height, &nrChannels, 0);
+      if (!data)
+      {
+        std::cerr << "Error::Texture could not load texture file:" << fileName << std::endl;
+        return 0;
+      }
+
+      // Step4 Upload the texture to the PU
+      GLenum format = 0;
+      if (nrChannels == 1)
+          format = GL_RED;
+      else if (nrChannels == 3)
+          format = GL_RGB;
+      else if (nrChannels == 4)
+          format = GL_RGBA;
+      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height,
+                   0, format, GL_UNSIGNED_BYTE, data);
+
+      // Step5 Free resources
+      stbi_image_free(data);
+      glBindTexture(GL_TEXTURE_2D, 0);
+      return textureId;
+}
+ 
 int main () {
     
     // initialize and configure glfw
@@ -145,7 +187,7 @@ int main () {
     #endif
     
     // create window object
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "COMP 371 - Assignment 1", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "COMP 371 - Assignment 2", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -177,8 +219,6 @@ int main () {
     
     GLuint commonShaderProgram = loadShaders(shaderPathPrefix + "common.vertexshader", shaderPathPrefix + "common.fragmentshader");
 
-    glUseProgram(commonShaderProgram);
-
     // camera parameters for view transform at origin
     vec3 cameraPosition(0.0f, 5.0f, 20.0f);
     vec3 cameraLookAt(0.0f, 0.0f, 0.0f); // camera looks at world space origin
@@ -207,7 +247,7 @@ int main () {
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
     
     // define and upload geometry to the GPU here
-    Ground ground(commonShaderProgram);
+    Ground ground(commonShaderProgram, "snow.jpg");
     Axis axis(commonShaderProgram);
     Olaf olaf(commonShaderProgram);
     
@@ -227,28 +267,49 @@ int main () {
     // set the gl depth function
     glDepthFunc(GL_LESS);
     
+    
+    unsigned int snowTexture = loadTexture("snow.jpg");
+
+    // shadow mapping
+    
+    // credited to learnopengl
+    // configure depth map FBO
+    unsigned int depthMapFBO;
+    glGenFramebuffers(1, &depthMapFBO);
+
+    // create 2D depth texture
+    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024; // resolution of depth map
+    unsigned int depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    // attach depth texture to depth math FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    glUseProgram(commonShaderProgram);
+    glUniform1i(glGetUniformLocation(commonShaderProgram, "textureSampler"), 0);
+    glUniform1i(glGetUniformLocation(commonShaderProgram, "shadowMap"), 2);
+
+    // create lighting
+    glm::vec3 lightPos(0.0f, 30.0f, 0.0f); // placed 30 units above olaf model
+    glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
+
     // yaw and pitch settings for mouse rotations
     float yaw = 0.0f;
     float pitch = 0.0f;
-     
- 
-         glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
-            glUniform3fv(glGetUniformLocation(commonShaderProgram, "lightColor"), 1, &lightColor[0]);
-     
-    glUniform3fv(glGetUniformLocation(commonShaderProgram, "lightPos"), 1, &lightPos[0]);
-
-    
-             glUniform3fv(glGetUniformLocation(commonShaderProgram, "viewPos"), 1, &cameraPosition[0]);
-    
- 
-            glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
-              glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
-    
-    //        // world transformation
-    glm::mat4 model = glm::mat4(1.0f);
-
-    glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "worldMatrix"), 1, GL_FALSE, &model[0][0]);
-    
 
     // main game loop
     // render loop (an iteration of the loop is a frame)
@@ -258,7 +319,46 @@ int main () {
         lastFrameTime += dt;
         
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear depth buffer bit at the beginning of each frame
+        
+        // credited to learnopengl
+        // render depth of scene to texture (from light's perspective)
+        glm::mat4 lightProjection, lightView;
+        glm::mat4 lightSpaceMatrix;
+        float near_plane = 1.0f, far_plane = 30.0f; // since a perspective projection matrix is being used, the far plane is made higher to reflect the entire scene
+        lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane);
 
+        lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+        lightSpaceMatrix = lightProjection * lightView;
+          
+        glUseProgram(commonShaderProgram);
+        glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+        
+        // reset viewport
+        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, snowTexture);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
+        // render scene as normal using the generated depth/shadow map
+        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(commonShaderProgram);
+        
+        // set matrix uniforms
+        glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
+        glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+        
+        // set light uniforms
+        glUniform3fv(glGetUniformLocation(commonShaderProgram, "lightColor"), 1, &lightColor[0]);
+        glUniform3fv(glGetUniformLocation(commonShaderProgram, "viewPos"), 1, &cameraPosition[0]);
+        glUniform3fv(glGetUniformLocation(commonShaderProgram, "lightPos"), 1, &lightPos[0]);
+        glUniformMatrix4fv(glGetUniformLocation(commonShaderProgram, "lightSpaceMatix"), 1, GL_FALSE, &lightSpaceMatrix[0][0]);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, snowTexture); // add snow texture
+        glActiveTexture(GL_TEXTURE2);
+    
         // draw ground, axis and olaf
         ground.draw();
         axis.draw();
@@ -359,25 +459,20 @@ int main () {
         // pressing 'D' moves olaf to the right
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
              olaf.translate(vec3(initTranslate.x + movement, initTranslate.y, initTranslate.z)); // position in y never changes since we only translate in x and z
-            
         }
         
         // pressing 'W' moves olaf up
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
-            
-            olaf.walk();
+            olaf.walkForward(); // olaf walks forward only when moving up
             olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z - movement)); // position in y never changes since we only translate in x and z
-
          }
         
         // pressing 'S' moves olaf down
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) ==  GLFW_PRESS) {
-            olaf.walk();
-             olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z + movement)); // position in y never changes since we only translate in x and z
-              
+            olaf.walkBackward(); // olaf walks backward only when moving down
+            olaf.translate(vec3(initTranslate.x, initTranslate.y, initTranslate.z + movement)); // position in y never changes since we only translate in x and z
          }
          
-        
         // pressing 'a' rotates left 5 degress about olaf's y axis
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) != GLFW_PRESS) {
             olaf.rotate(initRotateAngle + 1.0f, vec3(0.0f, 1.0f, 0.0f));
@@ -390,30 +485,30 @@ int main () {
         
         // pressing left arrow moves anticlockwise rotation about positive x axis
         if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-            axis.rotate(initRotateAngle + 5.0f, vec3(1.0f, 0.0f, 0.0f));
-            olaf.rotate(initRotateAngle + 5.0f, vec3(1.0f, 0.0f, 0.0f));
-            ground.rotate(initRotateAngle + 5.0f, vec3(1.0f, 0.0f, 0.0f));
+            axis.rotate(initRotateAngle + 1.0f, vec3(1.0f, 0.0f, 0.0f));
+            olaf.rotate(initRotateAngle + 1.0f, vec3(1.0f, 0.0f, 0.0f));
+            ground.rotate(initRotateAngle + 1.0f, vec3(1.0f, 0.0f, 0.0f));
         }
         
         // pressing right arrow moves clock rotation about negative x axis
         if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-            axis.rotate(initRotateAngle - 5.0f, vec3(1.0f, 0.0f, 0.0f));
-            olaf.rotate(initRotateAngle - 5.0f, vec3(1.0f, 0.0f, 0.0f));
-            ground.rotate(initRotateAngle - 5.0f, vec3(1.0f, 0.0f, 0.0f));
+            axis.rotate(initRotateAngle - 1.0f, vec3(1.0f, 0.0f, 0.0f));
+            olaf.rotate(initRotateAngle - 1.0f, vec3(1.0f, 0.0f, 0.0f));
+            ground.rotate(initRotateAngle - 1.0f, vec3(1.0f, 0.0f, 0.0f));
         }
         
         // pressing up arrow moves anticlockwise rotation about positive y axis
         if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-            axis.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
-            olaf.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
-            ground.rotate(initRotateAngle + 5.0f, vec3(0.0f, 1.0f, 0.0f));
+            axis.rotate(initRotateAngle + 1.0f, vec3(0.0f, 1.0f, 0.0f));
+            olaf.rotate(initRotateAngle + 1.0f, vec3(0.0f, 1.0f, 0.0f));
+            ground.rotate(initRotateAngle + 1.0f, vec3(0.0f, 1.0f, 0.0f));
         }
         
         // pressing down arrow moves anticlockwise rotation about negative y axis
         if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-            axis.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
-            olaf.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
-            ground.rotate(initRotateAngle - 5.0f, vec3(0.0f, 1.0f, 0.0f));
+            axis.rotate(initRotateAngle - 1.0f, vec3(0.0f, 1.0f, 0.0f));
+            olaf.rotate(initRotateAngle - 1.0f, vec3(0.0f, 1.0f, 0.0f));
+            ground.rotate(initRotateAngle - 1.0f, vec3(0.0f, 1.0f, 0.0f));
         }
         
         // pressing home button resets to initial world position and orientation (olaf's position on ground does not change)
@@ -489,16 +584,12 @@ int main () {
         
         // pressing 'X' toggles texture on/off
         if (glfwGetKey(window, GLFW_KEY_X) && glfwGetKey(window,GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-            
+            olaf.toggleTexture();
+            ground.toggleTexture();
         }
 
-        
         GLuint viewMatrixLocation = glGetUniformLocation(commonShaderProgram, "viewMatrix");
         glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, &viewMatrix[0][0]);
-        
-        
-        
-      
     }
     
     glfwTerminate(); // delete all GLFW resources

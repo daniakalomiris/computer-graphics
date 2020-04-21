@@ -22,8 +22,8 @@ Sphere::Sphere(vec3 rgb, int shaderProgram) {
     this->shaderProgram = shaderProgram;
     this->initRotateM = glm::mat4(1.0f);
     this->moveRotateM = glm::mat4(1.0f);
-    
-    this->isMovingSelf = false;
+    this->isMovingForward = false;
+    this->isMovingBackward = false;
 }
 
 Sphere::Sphere(vec3 rgb, int shaderProgram, const char* fileName) {
@@ -31,7 +31,8 @@ Sphere::Sphere(vec3 rgb, int shaderProgram, const char* fileName) {
     this->shaderProgram = shaderProgram;
     this->initRotateM = glm::mat4(1.0f);
     this->moveRotateM = glm::mat4(1.0f);
-    this->isMovingSelf = false;
+    this->isMovingForward = false;
+    this->isMovingBackward = false;
     this->isTextured = true;
     this->createTexture(fileName);
 }
@@ -1391,6 +1392,7 @@ GLuint Sphere::createTexture(const char* fileName) {
     return textureId;
 }
 
+// toggle texture
 void Sphere::toggleTexture() {
     isTextured = !isTextured;
 }
@@ -1411,12 +1413,13 @@ void Sphere::draw(int renderMode) {
     int vertexColorLocation = glGetUniformLocation(shaderProgram, "vertexColor");
     glUniform3f(vertexColorLocation, rgb.x, rgb.y, rgb.z);
     
-   GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
+    GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
     
-    if(!isMovingSelf) {
+    // update world matrix iwht transformations
+    if(!isMovingForward && !isMovingBackward) {
         modelWorldMatrix = initRotateM * initTranslateM * initScaleM;
-    } else {
-        modelWorldMatrix = initRotateM * initTranslateM * initScaleM * moveRotateM;
+    } else if (isMovingForward || isMovingBackward) {
+        modelWorldMatrix = initRotateM * moveRotateM * initTranslateM * initScaleM;
     }
     
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelWorldMatrix[0][0]);
@@ -1425,7 +1428,8 @@ void Sphere::draw(int renderMode) {
     glDrawArrays(renderMode, 0, 1260);
     
     // reset walking movement
-    this->isMovingSelf = false;
+    this->isMovingForward = false;
+    this->isMovingBackward = false;
 }
 
 // initializing all transformation matrices
@@ -1476,6 +1480,7 @@ vec3 Sphere::getInitScale() {
     return this->initScale;
 }
 
+// add shiny material to sphere model
 void Sphere::setShinyMaterial() {
     const GLfloat ambient[4] = {0.02f, 0.02f, 0.02f, 1.0f};
     const GLfloat diffuse[4] = {0.01f, 0.01f, 0.01f, 1.0f};
@@ -1488,14 +1493,24 @@ void Sphere::setShinyMaterial() {
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 }
 
-void Sphere::moveSelf() {
-    this->isMovingSelf = !isMovingSelf;
+// set and booleans for sphere movement
+void Sphere::moveForward() {
+    this->isMovingForward = !isMovingForward;
 }
 
-GLboolean Sphere::getIsMovingSelf() {
-    return this->isMovingSelf;
+void Sphere::moveBackward() {
+    this->isMovingBackward = !isMovingBackward;
 }
 
+GLboolean Sphere::getIsMovingForward() {
+    return this->isMovingForward;
+}
+
+GLboolean Sphere::getIsMovingBackward() {
+    return this->isMovingBackward;
+}
+
+// transformation for movement
 void Sphere::setMoveRotate(float angle, glm::vec3 rotate) {
     moveRotateM = glm::rotate(glm::mat4(1.0f), radians(angle), rotate);
 }

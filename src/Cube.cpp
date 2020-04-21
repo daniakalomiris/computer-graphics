@@ -16,8 +16,9 @@
 using namespace std;
 using namespace glm;
 
-struct TexturedColoredVertex
-{
+
+// credited to lab code
+struct TexturedColoredVertex {
     TexturedColoredVertex(vec3 _position, vec3 _normal, vec2 _uv)
     : position(_position), normal(_normal), uv(_uv) {}
     
@@ -26,13 +27,12 @@ struct TexturedColoredVertex
     vec2 uv;
 };
 
-
 Cube::Cube(vec3 rgb, int shaderProgram) {
     this->rgb = rgb;
     this->shaderProgram = shaderProgram;
     this->initRotateM = glm::mat4(1.0f);
     this->modelWorldMatrix = glm::mat4(1.0f);
-    this->isTextured = false;
+    this->isTextured = false; // initialize without texture
     this->vertexArrayObject = createVAO();
 }
 
@@ -45,7 +45,7 @@ Cube::Cube(vec3 rgb, int shaderProgram, const char* fileName) {
     this->textureID = createTexture(fileName);
     this->vertexArrayObject = createVAO();
 }
- 
+
 int Cube::createVAO(){
     const TexturedColoredVertex texturedCubeVertexArray[] = {
         
@@ -109,7 +109,6 @@ int Cube::createVAO(){
     glGenBuffers(1, &vertexBufferObject);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBufferData(GL_ARRAY_BUFFER, sizeof(texturedCubeVertexArray), texturedCubeVertexArray, GL_STATIC_DRAW);
-
              
     glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
                           3,                   // size
@@ -119,8 +118,8 @@ int Cube::createVAO(){
                           (void*)0             // array buffer offset
                           );
     glEnableVertexAttribArray(0);
-
-
+    
+    
     glVertexAttribPointer(2,                            // attribute 2 matches aUV in Vertex Shader
                           2,
                           GL_FLOAT,
@@ -129,6 +128,15 @@ int Cube::createVAO(){
                           (void*)(2*sizeof(vec3))      // uv is offseted by 2 vec3 (comes after position and color)
                           );
     glEnableVertexAttribArray(2);
+    
+    glVertexAttribPointer(3,                   // attribute 0 matches aPos in Vertex Shader
+                          3,                   // size
+                          GL_FLOAT,            // type
+                          GL_FALSE,            // normalized?
+                          sizeof(TexturedColoredVertex), // stride - each vertex contain 2 vec3 (position, color)
+                          (void*)0             // array buffer offset
+                          );
+    glEnableVertexAttribArray(3);
     
     return vertexArrayObject;      
 }
@@ -183,19 +191,16 @@ void Cube::draw(int renderMode) {
     if (isTextured) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
-
         GLuint textureLocation = glGetUniformLocation(shaderProgram, "textureSampler");
-         glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
+        glUniform1i(textureLocation, 0);                // Set our Texture sampler to user Texture Unit 0
         glUniform1i(textureLocation, true);
     }
     
     int vertexColorLocation = glGetUniformLocation(shaderProgram, "vertexColor");
-           glUniform3f(vertexColorLocation, rgb.x, rgb.y, rgb.z);
+    glUniform3f(vertexColorLocation, rgb.x, rgb.y, rgb.z);
  
     GLuint worldMatrixLocation = glGetUniformLocation(shaderProgram, "worldMatrix");
-    
     modelWorldMatrix = initRotateM * initTranslateM * initScaleM;
-    
     glUniformMatrix4fv(worldMatrixLocation, 1, GL_FALSE, &modelWorldMatrix[0][0]);
     glDrawArrays(renderMode, 0, 36);
 }

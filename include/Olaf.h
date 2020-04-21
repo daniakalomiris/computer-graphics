@@ -36,7 +36,8 @@ class Olaf {
         float getInitRotateAngle();
         void setRenderMode(int renderMode);
         void toggleTexture();
-        void walk();
+        void walkForward();
+        void walkBackward();
     private:
         int shaderProgram;
         glm::vec3 rgb;

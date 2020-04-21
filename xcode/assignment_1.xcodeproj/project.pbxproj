@@ -129,11 +129,11 @@
 			isa = PBXGroup;
 			children = (
 				FC8724F623FD9436009018C2 /* Olaf.cpp */,
+				FCBEB38F24149334005453EF /* Sphere.cpp */,
 				FCA991C623FDF061007199DF /* Cube.cpp */,
 				FC07820723E2092400C4E241 /* main.cpp */,
 				FC8724F423FCE58B009018C2 /* Axis.cpp */,
 				FC8724EF23FB5060009018C2 /* Ground.cpp */,
-				FCBEB38F24149334005453EF /* Sphere.cpp */,
 			);
 			name = src;
 			path = ../src;

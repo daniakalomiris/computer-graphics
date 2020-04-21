@@ -25,7 +25,7 @@ Olaf::Olaf(int shaderProgram) {
     this->head = new Sphere(vec3(1.0f, 1.0f, 1.0f), shaderProgram);
     this->leftHand = new Sphere(vec3(1.0f, 1.0f, 1.0f), shaderProgram);
     this->rightHand = new Sphere(vec3(1.0f, 1.0f, 1.0f), shaderProgram);
-    this->nose = new Cube(vec3(0.0f, 0.0f, 0.0f), shaderProgram, "carrot.jpg");
+    this->nose = new Cube(vec3(0.0f, 0.0f, 0.0f), shaderProgram, "carrot.jpg"); // initialize with a texture
     this->leftEye = new Sphere(vec3(0.5f, 0.3f, 0.0f), shaderProgram);
     this->rightEye = new Sphere(vec3(0.5f, 0.3f, 0.0f), shaderProgram);
     this->lowerHat = new Sphere(vec3(0.55f, 0.55f, 0.55f), shaderProgram);
@@ -46,7 +46,8 @@ Olaf::Olaf(int shaderProgram) {
     // default render mode is triangles
     this->renderMode = GL_TRIANGLES;
     
-    this->movementAngle = 0.1f;
+    // rotation variables for walking
+    this->movementAngle = 0.75f;
     this->movementRotate = vec3(0.0f, 1.0f, 0.0f);
 }
 
@@ -93,19 +94,19 @@ void Olaf::draw() {
 void Olaf::drawLeftFoot() {
     leftFoot->createVAO();
     leftFoot->setInitRotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
+    leftFoot->setRotate(initRotateAngle, initRotate);
+    
+    // part only moves when olaf is walking either forward or backward
+    if (leftFoot->getIsMovingForward()) {
+        leftFoot->setMoveRotate(movementAngle, movementRotate);
+    } else if (leftFoot->getIsMovingBackward()) {
+        leftFoot->setMoveRotate(-movementAngle, movementRotate);
+    }
+    
     leftFoot->setInitTranslate(vec3(-1.0f, 0.25f, 0.0f));
     leftFoot->setTranslate(initTranslate);
     leftFoot->setInitScale(vec3(0.75f, 0.25f, 0.5f));
     leftFoot->setScale(initScale);
-    
-    // only rotate if it is walking
-      if (leftFoot->getIsMovingSelf()) {
-          leftFoot->setMoveRotate(movementAngle, movementRotate);
-      } else {
-          leftFoot->setRotate(initRotateAngle, initRotate);
-
-      }
-    
     leftFoot->draw(renderMode);
 }
 
@@ -113,6 +114,13 @@ void Olaf::drawRightFoot() {
     rightFoot->createVAO();
     rightFoot->setInitRotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
     rightFoot->setRotate(initRotateAngle, initRotate);
+    
+    if (rightFoot->getIsMovingForward()) {
+        rightFoot->setMoveRotate(movementAngle, movementRotate);
+    } else if (rightFoot->getIsMovingBackward()) {
+        rightFoot->setMoveRotate(-movementAngle, movementRotate);
+    }
+    
     rightFoot->setInitTranslate(vec3(1.0f, 0.25f, 0.0f));
     rightFoot->setTranslate(initTranslate);
     rightFoot->setInitScale(vec3(0.75f, 0.25f, 0.5f));
@@ -157,6 +165,13 @@ void Olaf::drawLeftHand() {
     leftHand->createVAO();
     leftHand->setInitRotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
     leftHand->setRotate(initRotateAngle, initRotate);
+    
+    if (leftHand->getIsMovingForward()) {
+       leftHand->setMoveRotate(movementAngle, movementRotate);
+    } else if (leftHand->getIsMovingBackward()) {
+       leftHand->setMoveRotate(-movementAngle, movementRotate);
+    }
+    
     leftHand->setInitTranslate(vec3(-1.5f, 3.75f, 0.0f));
     leftHand->setTranslate(initTranslate);
     leftHand->setInitScale(vec3(2.0f, 0.25f, 0.25f));
@@ -168,6 +183,13 @@ void Olaf::drawRightHand() {
     rightHand->createVAO();
     rightHand->setInitRotate(0.0f, vec3(1.0f, 1.0f, 1.0f));
     rightHand->setRotate(initRotateAngle, initRotate);
+    
+    if (rightHand->getIsMovingForward()) {
+       rightHand->setMoveRotate(movementAngle, movementRotate);
+    } else if (rightHand->getIsMovingBackward()) {
+       rightHand->setMoveRotate(-movementAngle, movementRotate);
+    }
+    
     rightHand->setInitTranslate(vec3(1.5f, 3.75f, 0.0f));
     rightHand->setTranslate(initTranslate);
     rightHand->setInitScale(vec3(2.0f, 0.25f, 0.25f));
@@ -216,6 +238,7 @@ void Olaf::drawLowerHat() {
     lowerHat->setTranslate(initTranslate);
     lowerHat->setInitScale(vec3(1.1f, 0.25f, 1.1f));
     lowerHat->setScale(initScale);
+    lowerHat->setShinyMaterial(); // add shiny material to hat
     lowerHat->draw(renderMode);
 }
 
@@ -227,6 +250,7 @@ void Olaf::drawUpperHat() {
     upperHat->setTranslate(initTranslate);
     upperHat->setInitScale(vec3(0.75f, 0.55f, 0.75f));
     upperHat->setScale(initScale);
+    lowerHat->setShinyMaterial(); // add shiny material to hat
     upperHat->draw(renderMode);
 }
 
@@ -324,10 +348,19 @@ void Olaf::toggleTexture() {
     this->upperHat->toggleTexture();
 }
 
-// olaf animation movements when walking forward and backward
+// olaf movements when walking forward and backward
 // legs and arms move for each type of movement
-void Olaf::walk() {
-    this->leftFoot->moveSelf();
-    this->rightFoot->moveSelf();
+void Olaf::walkForward() {
+    this->leftFoot->moveForward();
+    this->rightFoot->moveForward();
+    this->leftHand->moveForward();
+    this->rightHand->moveForward();
+}
+
+void Olaf::walkBackward() {
+    this->leftFoot->moveBackward();
+    this->rightFoot->moveBackward();
+    this->leftHand->moveBackward();
+    this->rightHand->moveBackward();
 }
 

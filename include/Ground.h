@@ -6,6 +6,7 @@
 
 #include <GL/glew.h>
 
+#include "Cube.h"
 
 class Ground {
     public:
@@ -21,4 +22,6 @@ class Ground {
         float initRotateAngle;
         bool isTextured;
         GLuint textureID;
+        Cube* floor;
+        int renderMode;
 };

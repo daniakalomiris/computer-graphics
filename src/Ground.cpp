@@ -28,7 +28,6 @@ Ground::Ground(int shaderProgram, const char* fileName) {
     this->shaderProgram = shaderProgram;
     this->initRotate = vec3(1.0f, 1.0f, 1.0f);
     this->initRotateAngle = 0.0f;
-    
     this->isTextured = true;
 }
 
@@ -51,8 +50,6 @@ void Ground::draw(){
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexArray), vertexArray, GL_STATIC_DRAW);
        
-    
-        
     glVertexAttribPointer(0,                   // attribute 0 matches aPos in Vertex Shader
                       3,                   // size
                       GL_FLOAT,            // type

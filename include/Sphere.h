@@ -22,8 +22,10 @@ class Sphere {
         GLuint createTexture(const char* filename);
         void toggleTexture();
         void setShinyMaterial();
-        void moveSelf();
-        GLboolean getIsMovingSelf();
+        void moveForward();
+        void moveBackward();
+        GLboolean getIsMovingForward();
+        GLboolean getIsMovingBackward();
         void setMoveRotate(float angle, glm::vec3 rotate);
     private:
         struct Vertex {
@@ -47,7 +49,8 @@ class Sphere {
         bool isTextured;
         GLuint textureID;
         glm::vec3 vertexColor;
-        GLboolean isMovingSelf;
+        GLboolean isMovingForward;
+        GLboolean isMovingBackward;
         glm::vec3 movementRotate;
         float movementAngle;
         glm::mat4 moveRotateM;
