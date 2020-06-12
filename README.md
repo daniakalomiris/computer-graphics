@@ -1,9 +1,9 @@
 # COMP 371 - Computer Graphics
 
-## Running the application
-This project was built in Xcode and has only been tested on a Mac. To run the application, the `.xcodeproj` file under the `xcode` folder must be opened in Xcode. All libraries have already been added to the build paths of the project.
+## Getting started
+This project was built in Xcode and has only been tested on a Mac. To run the application, navigate to the `xcode` folder and open the `.xcodeproj` file in Xcode. All libraries have already been added to the build paths of the project.
 
-## Features
+## Features and movement
 - The application uses the Phong model for lighting
 - Olaf's legs and arms move when he either moves forward or backward
 - Olaf's position can be repositioned to a random location on the grid by pressing `SPACEBAR`
